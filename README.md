@@ -6,5 +6,5 @@ This module solves that by creates a pseudo field for the injected fields.
 
 Very much work in progress...
 
-Initial inspiration for how to remove the injected fields from code by "Radoslav Terezka" https://www.drupal.org/u/hideaway
+Initial inspiration for how to remove the injected fields from code by Radoslav Terezka: https://www.drupal.org/u/hideaway
 https://www.drupal.org/project/commerce/issues/2910246#comment-12266573
