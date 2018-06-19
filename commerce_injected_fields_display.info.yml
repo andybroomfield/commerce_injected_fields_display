@@ -1,0 +1,7 @@
+name: 'Commerce Injected Fields Display'
+type: module
+description: 'Allows the product variation injected fields to be ordered on the manage display screen.'
+core: 8.x
+package: 'Commerce'
+dependencies:
+  - commerce

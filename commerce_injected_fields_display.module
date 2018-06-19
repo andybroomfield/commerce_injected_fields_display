@@ -1,0 +1,132 @@
+<?php
+
+/**
+ * @file
+ * Contains commerce_injected_fields_display.module.
+ */
+
+use \Drupal\Core\Routing\RouteMatchInterface;
+use \Drupal\Core\Entity\EntityInterface;
+use \Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+
+/**
+ * Implements hook_help().
+ */
+function commerce_injected_fields_display_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the commerce_injected_fields_display module.
+    case 'help.page.commerce_injected_fields_display':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Allows the product variation injected fields to be ordered on the manage display screen.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_injected_fields_display_theme() {
+  return [
+    'commerce_injected_fields_display' => [
+      'render element' => 'children',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_module_implements_alter
+ */
+function commerce_injected_fields_display_module_implements_alter(&$implementations, $hook) {
+  switch ($hook) {
+
+    // Move our hook_entity_extra_field_info() implementation to the end of the list.
+    case 'entity_extra_field_info':
+      $group = $implementations['commerce_injected_fields_display'];
+      unset($implementations['commerce_injected_fields_display']);
+      $implementations['commerce_injected_fields_display'] = $group;
+      break;
+      
+  }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function commerce_injected_fields_display_entity_extra_field_info() {
+
+	$productTypes = array_keys(\Drupal::service('entity_type.bundle.info')->getBundleInfo('commerce_product'));
+    
+  $extra_field = [];
+    
+  foreach($productTypes as $type) {
+    
+    // check if product type has injected fields, add the pseduo field
+    
+    $extra_field['commerce_product'][$type]['display']['injected_variation_fields'] = [
+      'label' => t('Injected Variation Fields'),
+      'description' => t('Fields injected into display from product variation'),
+      'weight' => 100,
+      'visible' => TRUE,
+   ];
+   
+  }
+
+  return $extra_field;
+}
+
+function commerce_injected_fields_display_commerce_product_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+        
+    if ($display->getComponent('injected_variation_fields')) {
+        
+        $build['injected_variation_fields'] = [];
+    }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter().
+ */
+function commerce_injected_fields_display_commerce_product_view_alter(array &$build, Drupal\Core\Entity\EntityInterface $entity, \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display) {
+    
+    // Skip if it is not a product view.
+    if ($build['#theme'] != 'commerce_product') {
+      return;
+    }
+
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entityTypeManager */
+    $entityTypeManager = Drupal::service('entity_type.manager');
+    
+    /** @var \Drupal\commerce_product\ProductVariationStorageInterface $variation_storage */
+    $variationStorage = $entityTypeManager->getStorage('commerce_product_variation');
+    
+    /** @var \Drupal\commerce_product\ProductVariationFieldRenderer $variationPrerender */
+    $variationPrerender = \Drupal::service('commerce_product.variation_field_renderer');
+    
+    /** @var \Drupal\commerce_product\Entity\ProductVariation $variation */
+    $variation = $variationStorage->loadFromContext($entity);
+    
+    // Use the found view mode in $build
+    $renderedFields = $variationPrerender->renderFields($variation, $build['#view_mode']);
+     
+    // Copy injected fields into the psuedo field, then remove them.
+    foreach ($renderedFields as $fieldName => $renderedField) {
+        $variationFieldName = 'variation_' . $fieldName;
+        if (isset($build[$variationFieldName])) {
+            if (isset($build['injected_variation_fields'])) {
+                $build['injected_variation_fields'][$variationFieldName] = $build[$variationFieldName];
+            }
+            unset($build[$variationFieldName]);
+        }
+    }
+    
+    // Remove injected product variation attributes.
+    if (isset($build['variation_attributes'])) {
+        if (isset($build['injected_variation_fields'])) {
+            $build['injected_variation_fields']['variation_attributes'] = $build['variation_attributes'];
+        }
+        unset($build['variation_attributes']);
+    }
+
+}

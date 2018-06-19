@@ -1,0 +1,14 @@
+{
+  "name": "drupal/commerce_injected_fields_display",
+  "type": "drupal-module",
+  "description": "Allows the product variation injected fields to be ordered on the manage display screen",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://github.com/andybroomfield/commerce_injected_fields_display",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://github.com/andybroomfield/commerce_injected_fields_display/issues",
+    "source": "https://github.com/andybroomfield/commerce_injected_fields_display.git"
+  },
+  "require": { }
+}
