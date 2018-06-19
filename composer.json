@@ -10,5 +10,7 @@
     "issues": "https://github.com/andybroomfield/commerce_injected_fields_display/issues",
     "source": "https://github.com/andybroomfield/commerce_injected_fields_display.git"
   },
-  "require": { }
+  "require": {
+    "drupal/commerce": "~2.0"
+  }
 }
